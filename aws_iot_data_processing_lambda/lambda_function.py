@@ -5,6 +5,7 @@ import json
 import logging.handlers
 import boto3
 
+
 def init_logger(logger):
     logger.setLevel(logging.DEBUG)
     if not logger.handlers:
@@ -17,7 +18,7 @@ def init_logger(logger):
 
 
 def extract_samples(logger, msg):
-    data = {"reportId" : None, "totalSamples" : 0, "samples": []}
+    data = {"reportId": None, "totalSamples": 0, "samples": []}
     total_samples = 0
     if "reportId" in msg.keys():
         data.update({'reportId': msg["reportId"]})
@@ -68,7 +69,7 @@ def lambda_handler(event, context):
     thing_metadata["mqtt_clientid"] = client_id
     try:
         client = boto3.client('iot', region_name='eu-central-1')
-        things_info = client.list_things(maxResults=1,attributeName='UUID',attributeValue=client_id)
+        things_info = client.list_things(maxResults=1, attributeName='UUID', attributeValue=client_id)
 
         if (things_info["ResponseMetadata"]["HTTPStatusCode"] == 200) and (len(things_info["things"]) > 0):
             thing = things_info["things"][0]
@@ -77,12 +78,6 @@ def lambda_handler(event, context):
             thing_metadata["thingArn"] = thing["thingArn"]
         else:
             thing_metadata["ERROR"] = f"Could not find a thing with attribute UUID=='{client_id}'"
-
-    except boto3.Client.exceptions.UnauthorizedException as e:
-        logger.warning("This lambda needs read permission to iot:ListThing and iot:DescribeThing operation.\n" +
-                       "Please assign a policy with these permissions to this lambda and try again.\n" +
-                       "Exception details: " + e)
-        thing_metadata["ERROR"] = "Lambda has no iot:ListThing and iot:DescribeThing permissions"
     except Exception as e:
         logger.error(f"Caught an exception while accessing AWS IoT using boto3:\n{e}")
 
@@ -97,10 +92,3 @@ def lambda_handler(event, context):
     #############################################################################
     # Here you can send json_response for further processing with any AWS service
     #############################################################################
-
-event = json.loads("{\"client_id\": \"2453AC035CBCBC9A\", \
-                    \"topic\": \"wv/2453AC035CBCBC9A/1/samp/p1\", \
-                    \"data\": \"CCQSqQESBAgEEAMioAEKDgjAus+MguXwAhIDCKMOCg4IwNqRq4Ll8AISAwiRBwoOCICDwKmD5fACEgMI5RcKDgiAkY7Gg+XwAhIDCOEECg4IwKOZ44Pl8AISAwiRBwoOCICtqv+D5fACEgMI4QQKDgiAu/ibhOXwAhIDCOEECg4IgMnGuITl8AISAwjhBAoOCIDXlNWE5fACEgMIkQcKDgiA5eLxhOXwAhIDCOEEEhgSBAgBEAMiEAoOCMCqrv2B5fACEgMI+ioSFRICEAYiDwoNCMCqrv2B5fACEgIIAxJYEgQIBBADIlAKDgjAz9+lheXwAhIDCMIJCg4IwN2twoXl8AISAwjhBAoOCMDr+96F5fACEgMIkQcKDgjA+cn7heXwAhIDCOEECg4IgIzVmIbl8AISAwjhBBIXEgQIARAGIg8KDQjAqq79geXwAhICCDUSFxIECAIQBiIPCg0IwKqu/YHl8AISAghqEhcSBAgDEAYiDwoNCMCqrv2B5fACEgIICg==\", \
-                    \"timestamp\": 1621953222194 }")
-
-lambda_handler(event,None);
