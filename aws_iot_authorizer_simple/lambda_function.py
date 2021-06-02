@@ -6,6 +6,8 @@ ALLOW_ACTION = 'Allow'
 DENY_ACTION = 'Deny'
 USERNAME = "TestUserName"
 PASSWORD = "TestPassword"
+REGION = "eu-central-1"
+ACCOUNT_ID = "123456789012"
 
 
 def init_logger(logger):
@@ -19,16 +21,8 @@ def init_logger(logger):
         logger.propagate = False
 
 
-def get_environment_variables():
-    environment_variables = dict(
-        region=os.environ["region"],
-        account_id=os.environ["account_id"]
-        )
-    return environment_variables
-
-
-def generate_auth_response(effect, client_id, ev):
-    arn_prefix = "arn:aws:iot:{}:{}".format(ev["region"], ev["account_id"])
+def generate_auth_response(effect, client_id):
+    arn_prefix = "arn:aws:iot:{}:{}".format(REGION, ACCOUNT_ID)
     client_arn = "{}:client/{}".format(arn_prefix, client_id)
     publish_statement = dict(
         Action=["iot:Publish"],
@@ -60,17 +54,16 @@ def lambda_handler(event, context):
     logger.info("Starting")
     logger.debug(event)
     try:
-        ev = get_environment_variables()
         user_name = event["protocolData"]["mqtt"]["username"].split("?")[0]
         password = base64.b64decode(event["protocolData"]["mqtt"]["password"]).decode()
         client_id = event["protocolData"]["mqtt"]["clientId"]
         logger.info("Authenticating:{}:{}".format(user_name, client_id))
         if USERNAME == user_name and PASSWORD == password:
             logger.info("Access Granted")
-            answer = generate_auth_response(ALLOW_ACTION, client_id, ev)
+            answer = generate_auth_response(ALLOW_ACTION, client_id)
         else:
             logger.info("Access Denied")
-            answer = generate_auth_response(DENY_ACTION, client_id, ev)
+            answer = generate_auth_response(DENY_ACTION, client_id)
         logger.debug(answer)
         return answer
     except Exception as e:
