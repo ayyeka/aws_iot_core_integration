@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package akproto1;
+
+import "Sample.proto";
+
+message SparseSamples {
+  repeated StampedSample samples = 1;
+}

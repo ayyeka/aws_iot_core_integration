@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package akproto1;
+
+import "SparseSamples.proto";
+import "PeriodicSamples.proto";
+import "ChannelType.proto";
+
+message ChannelTypeAndNumber {
+	uint32 channel_number = 1;
+	akcommon.ChannelType channel_type = 2;
+}
+
+message SamplesMessage
+{
+	oneof source {
+		ChannelTypeAndNumber type_and_number = 2;
+	}
+
+	oneof samples
+	{
+		PeriodicSamples periodic = 3;
+		SparseSamples sparse = 4;
+	}
+}
+
+message SamplesBatchMessage
+{
+	int64 report_id = 1;
+	repeated SamplesMessage samples_batch = 2;
+}

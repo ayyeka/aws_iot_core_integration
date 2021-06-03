@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package akproto1;
+
+import "GpsData.proto";
+import "JPGData.proto";
+
+message SampleData {
+	oneof value {
+		uint64 uint64_value = 1;
+		sint64 sint64_value = 2;
+		float float_value = 3;
+		double double_value = 4;
+		bool bool_value = 5;
+		GpsData gps_value = 6;
+		JPGData jpg_value = 7;
+	}
+}
+
+message StampedSample {
+	uint64 timestamp = 1;
+	SampleData data = 2;
+}

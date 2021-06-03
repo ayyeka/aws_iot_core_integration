@@ -1,0 +1,25 @@
+syntax = "proto3";
+ 
+package lpwan1;
+import "nanopb.proto";
+import "ChannelType.proto";
+ 
+message LPWANSamplesMessage{
+   uint32 channel_number = 1;
+    akcommon.ChannelType channel_type = 2;
+ 
+    uint64 timestamp = 3;
+ 
+    oneof value {
+        uint64 uint64_value = 4;
+        sint64 sint64_value = 5;
+        float float_value = 6;
+        double double_value = 7;
+        bool bool_value = 8;
+    }
+}
+ 
+message LPWANClientMessage {
+   uint64 protocol_version = 1;
+   repeated LPWANSamplesMessage sample_messages = 2 [(nanopb).max_count = 2];
+}

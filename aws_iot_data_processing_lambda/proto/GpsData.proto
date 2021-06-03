@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package akproto1;
+
+message GpsData {
+  sint32 latitude = 1;
+  sint32 longitude = 2;
+  sint32 altitude = 3;
+  uint32 hdop = 4;
+  uint32 number_of_satellites = 5;
+  bool is_valid_fix = 6;
+}

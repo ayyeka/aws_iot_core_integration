@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package akproto1;
+
+import "Sample.proto";
+
+message PeriodicSamples {
+  uint64 first_timestamp = 1;
+  uint64 interval = 2;
+  repeated SampleData data = 3;
+}

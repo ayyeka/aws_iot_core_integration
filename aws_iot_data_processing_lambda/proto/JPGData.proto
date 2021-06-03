@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package akproto1;
+
+message JPGData {
+  uint32 width = 1;
+  uint32 height = 2;
+  uint32 compression_ratio = 3;
+  uint32 total_size = 4;
+  uint32 color_channels = 5;
+  bytes image_data = 6;
+}

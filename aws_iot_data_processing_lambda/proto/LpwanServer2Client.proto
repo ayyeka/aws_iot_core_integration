@@ -1,0 +1,48 @@
+syntax = "proto3";
+ 
+package lpwan1;
+import "nanopb.proto";
+ 
+enum CellularActivityModeCommand {
+    ON = 0;
+    OFF = 1;
+    ON_HOLD = 2;
+}
+
+message GetSettingCommand {
+}
+ 
+message SetSettingCommand {
+}
+ 
+message RebootCommand {
+   uint64 delay_ms = 1;
+}
+ 
+message EnterHibernateModeCommand {
+   uint64 delay_ms = 1;
+}
+ 
+message TransmitNowCommand {
+}
+
+message SetCellularActivityModeCommand {
+    CellularActivityModeCommand cellular_activity_mode = 1;
+}
+ 
+message LPWANServerCommand {
+   uint64 command_number = 1;
+   oneof command {
+       TransmitNowCommand transmit_now = 2;
+       GetSettingCommand get_setting = 3;
+       SetSettingCommand set_setting = 4;
+       RebootCommand reboot = 5;
+       EnterHibernateModeCommand enter_hibernate_mode = 6;
+       SetCellularActivityModeCommand set_cellular_activity_mode = 7;
+   }
+}
+ 
+message LPWANServerMessage {
+   uint64 protocol_version = 1;
+   repeated LPWANServerCommand server_command = 2 [(nanopb).max_count = 1];
+}

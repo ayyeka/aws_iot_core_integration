@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package akproto1;
+
+enum ReportEndReason {
+  CLOSED = 0;
+  TERMINATED = 1;
+}
+
+enum ReportPriority {
+	REPORTING_PRIORITY_LOW = 0;
+	REPORTING_PRIORITY_MEDIUM = 1;
+	REPORTING_PRIORITY_HIGH = 2;
+	REPORTING_PRIORITY_INVALID = 255;
+}
+
+message ReportEndMessage{
+  uint64 report_id = 1;
+  ReportEndReason reason = 2;
+  ReportPriority report_priority = 3;
+}
