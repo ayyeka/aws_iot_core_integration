@@ -28,11 +28,8 @@ Other services  of **AWS IoT Core** are:
 IoT devices are called “things” in AWS IoT. Each thing has a "type", which defines certain properties. Possible type examples are:
 * Datalogger4G has required fields: `display_name`, `serial_number` and `UUID`
 * Datalogger3G has only one required field: `serial_number`
-Types and things are created and managed by admin users. When creating a thing, it is registered in the `Things Registry`. There are 3 ways to create things: 
-* manually
-* bulk upload
-* API calls
-The `Things Registry` can be accessed by other AWS Services (e.g. Lambda) 
+Types and things are created and managed by admin users. When creating a thing, it is registered in the `Things Registry`.
+The `Things Registry` can be accessed by other AWS Services (e.g. Lambda functions) 
 
 > **Note**: it is not mandatory to register your thing in the Things Registry. For example, data can be ingested from unregistered things as well.
 
@@ -46,23 +43,24 @@ AWS IoT Core supports multiple authentication options: <br>
 | --- | --- | --- | --- | --- | 
 |  MQTT over WebSocket  | Publish, Subscribe | Signature Version 4 | 443 |  N/A  | 
 |  MQTT over WebSocket  | Publish, Subscribe | Custom authentication | 443 |  N/A  | 
-|  MQTT  | Publish, Subscribe |  X\.509 client certificate  |  443†  |  `x-amzn-mqtt-ca`  | 
+|  MQTT  | Publish, Subscribe |  X\.509 client certificate  |  443†  |  'x-amzn-mqtt-ca'  | 
 | MQTT | Publish, Subscribe | X\.509 client certificate | 8883 | N/A | 
-|  MQTT  | Publish, Subscribe |  Custom authentication  |  443†  |  `mqtt`  | 
+| **MQTT**  | **Publish, Subscribe** |  **Custom authentication**  |  **443**†  |  **'mqtt'**  | 
 |  HTTPS  | Publish only |  Signature Version 4  |  443  |  N/A  | 
-|  HTTPS  | Publish only |  X\.509 client certificate  |  443†  |  `x-amzn-http-ca`  | 
+|  HTTPS  | Publish only |  X\.509 client certificate  |  443†  |  'x-amzn-http-ca'  | 
 | HTTPS | Publish only | X\.509 client certificate | 8443 | N/A | 
 | HTTPS | Publish only | Custom authentication | 443 | N/A | 
 
 Wavelet supports the “Custom authentication” option over MQTT. See `Custom authentication` option above. <br>
-`Custom authentication` requires an **Authorizer Lambda Function**
+<br>
+**Custom Authentication** requires an **Authorizer Lambda Function**:
 * The **Authorizer Lambda** receives the device’s MQTT credentials and verifies them
 * Verification can be done against AWS IoT things registry OR any other data source
 
 ### AWS IoT Core – Data Routing
 
 Devices can publish their data over MQTT to AWS IoT Core
-> **Note**: the device must be granted **permission to publish** to a certain topic
+> **Note**: the device must be granted **permission to publish** to a certain topic. See Authorizer Lambda below.
 
 Each received MQTT message is tested against a user-defined set of rules. A `rule` is defined by three elements:
 * `Filter`: defines which MQTT topics and messages will be processed by this rule
@@ -76,15 +74,15 @@ With `rules` and `actions`, common IoT tasks can be handled:
 
 ### Wavelet & MQTT – The Fine Print
 
-MQTT User & Password: 
+**MQTT User & Password:**
 * Must be configured to a valid username and password, per the AWS IoT Core setup
-* Note: empty `username` or empty `password` will force Wavelet to use its hardcoded defaults
+* Note: empty `username` or empty `password` will force Wavelet to use its hardcoded defaults, which do not match the credentials defined by the Authorizer Lambda by default.
 
-MQTT ClientID: 
+**MQTT ClientID:**
 * Wavelet is sending its AKID as the MQTT Client ID. 
 * The AKID can be retrieved on FAI Pro user interface or through the REST API
 
-MQTT Topics:
+**MQTT Topics:**
 
 | Protocol | Operations supported | Authentication | 
 | --- | --- | --- |
