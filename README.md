@@ -1,4 +1,4 @@
-# AWS Iot Core Integration
+# Wavelet & AWS IoT Core Integration
 
 <p align="center">
   <a href="https://www.ayyeka.com/">
@@ -6,11 +6,17 @@
   </a>
 </p>
 
-## Overview
+## Guide Overview
 
+This guide will walk you through integrating a Wavelet device to AWS IoT core. At the end of this guide, your Wavelet will transmit its sensor data to AWS IoT Core and receive remote configuration commands from Ayyeka's FAI platform, as shown in the following figure:
 ![picture_2](images/picture_2.PNG)
 
-### AWS IoT Core Overview
+The guide is structured as follows:
+* AWS IoT Core Intro
+* AWS IoT Core Configuration
+* 
+
+## AWS IoT Core Intro
 
 **AWS IoT Core** provides building blocks for cloud-based IoT solutions. The key services of **AWS IoT Core** are:
 * Device ("thing") registry 
@@ -107,7 +113,7 @@ With `rules` and `actions`, common IoT tasks can be handled:
 * Create a `rule` and an `action`
 
 
-# **Step 1**
+## **Step 1**
 ### Creating an Authorizer Lambda
 
 
@@ -169,7 +175,7 @@ Under `Lambda > Functions > aws_iot_authorizer_things_registry` for example
 Then open `Monitor > Logs`
 You should see the routed auth requests sent by the custom authorizer to this lambda.
 > **Note**: Note that there is a ~3 mins delay between running your script and aws lambda logs
-# **Step 2**
+## **Step 2**
 ### Creating a Data Processing Lambda
 
 1. Download the project from GitHub: http://github.com/ayyeka/aws_iot_core_integration
