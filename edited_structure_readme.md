@@ -1,4 +1,4 @@
-# Wavelet & AWS IoT Core Integration
+# AWS Iot Core Integration
 
 <p align="center">
   <a href="https://www.ayyeka.com/">
@@ -6,17 +6,11 @@
   </a>
 </p>
 
-## Guide Overview
+## Overview
 
-This guide will walk you through integrating a Wavelet device to AWS IoT core. At the end of this guide, your Wavelet will transmit its sensor data to AWS IoT Core and receive remote configuration commands from Ayyeka's FAI platform, as shown in the following figure:
 ![picture_2](images/picture_2.PNG)
 
-The guide is structured as follows:
-* AWS IoT Core Intro
-* AWS IoT Core Configuration
-* 
-
-## AWS IoT Core Intro
+### AWS IoT Core Overview
 
 **AWS IoT Core** provides building blocks for cloud-based IoT solutions. The key services of **AWS IoT Core** are:
 * Device ("thing") registry 
@@ -34,8 +28,11 @@ Other services  of **AWS IoT Core** are:
 IoT devices are called “things” in AWS IoT. Each thing has a "type", which defines certain properties. Possible type examples are:
 * Datalogger4G has required fields: `display_name`, `serial_number` and `UUID`
 * Datalogger3G has only one required field: `serial_number`
-Types and things are created and managed by admin users. When creating a thing, it is registered in the `Things Registry`.
-The `Things Registry` can be accessed by other AWS Services (e.g. Lambda functions) 
+Types and things are created and managed by admin users. When creating a thing, it is registered in the `Things Registry`. There are 3 ways to create things: 
+* manually
+* bulk upload
+* API calls
+The `Things Registry` can be accessed by other AWS Services (e.g. Lambda) 
 
 > **Note**: it is not mandatory to register your thing in the Things Registry. For example, data can be ingested from unregistered things as well.
 
@@ -49,24 +46,23 @@ AWS IoT Core supports multiple authentication options: <br>
 | --- | --- | --- | --- | --- | 
 |  MQTT over WebSocket  | Publish, Subscribe | Signature Version 4 | 443 |  N/A  | 
 |  MQTT over WebSocket  | Publish, Subscribe | Custom authentication | 443 |  N/A  | 
-|  MQTT  | Publish, Subscribe |  X\.509 client certificate  |  443†  |  'x-amzn-mqtt-ca'  | 
+|  MQTT  | Publish, Subscribe |  X\.509 client certificate  |  443†  |  `x-amzn-mqtt-ca`  | 
 | MQTT | Publish, Subscribe | X\.509 client certificate | 8883 | N/A | 
-| **MQTT**  | **Publish, Subscribe** |  **Custom authentication**  |  **443**†  |  **'mqtt'**  | 
+|  MQTT  | Publish, Subscribe |  Custom authentication  |  443†  |  `mqtt`  | 
 |  HTTPS  | Publish only |  Signature Version 4  |  443  |  N/A  | 
-|  HTTPS  | Publish only |  X\.509 client certificate  |  443†  |  'x-amzn-http-ca'  | 
+|  HTTPS  | Publish only |  X\.509 client certificate  |  443†  |  `x-amzn-http-ca`  | 
 | HTTPS | Publish only | X\.509 client certificate | 8443 | N/A | 
 | HTTPS | Publish only | Custom authentication | 443 | N/A | 
 
 Wavelet supports the “Custom authentication” option over MQTT. See `Custom authentication` option above. <br>
-<br>
-**Custom Authentication** requires an **Authorizer Lambda Function**:
+`Custom authentication` requires an **Authorizer Lambda Function**
 * The **Authorizer Lambda** receives the device’s MQTT credentials and verifies them
 * Verification can be done against AWS IoT things registry OR any other data source
 
 ### AWS IoT Core – Data Routing
 
 Devices can publish their data over MQTT to AWS IoT Core
-> **Note**: the device must be granted **permission to publish** to a certain topic. See Authorizer Lambda below.
+> **Note**: the device must be granted **permission to publish** to a certain topic
 
 Each received MQTT message is tested against a user-defined set of rules. A `rule` is defined by three elements:
 * `Filter`: defines which MQTT topics and messages will be processed by this rule
@@ -80,15 +76,15 @@ With `rules` and `actions`, common IoT tasks can be handled:
 
 ### Wavelet & MQTT – The Fine Print
 
-**MQTT User & Password:**
+MQTT User & Password: 
 * Must be configured to a valid username and password, per the AWS IoT Core setup
-* Note: empty `username` or empty `password` will force Wavelet to use its hardcoded defaults, which do not match the credentials defined by the Authorizer Lambda by default.
+* Note: empty `username` or empty `password` will force Wavelet to use its hardcoded defaults
 
-**MQTT ClientID:**
+MQTT ClientID: 
 * Wavelet is sending its AKID as the MQTT Client ID. 
 * The AKID can be retrieved on FAI Pro user interface or through the REST API
 
-**MQTT Topics:**
+MQTT Topics:
 
 | Protocol | Operations supported | Authentication | 
 | --- | --- | --- |
@@ -102,33 +98,43 @@ With `rules` and `actions`, common IoT tasks can be handled:
 
 ### Configuration Process Overview
 
-**Step 1**: Configure custom device authentication process
+**Step 1**: Configure simple authentication process
 * Create a Custom Authorizer Lambda function
 * Create an Authorizer on AWS IoT Core
-* (Optional) Register a device in the Things Registry
-* (Optional) Modify the authorizer Lambda to check if the device exists in the registry
+* Test authentication process
 
-**Step 2**: Configure a data processing rule
+**Step 2**: (Optional) Configure custom device authentication process with `Things registry`
+* Create a Custom Authorizer Lambda function
+* Create an Authorizer on AWS IoT Core
+* Register a device in the Things Registry
+* Give the auth Lambda access to `Things registry` 
+* Test Custom Authorizer
+
+**Step 3**: Configure a data processing rule
 * Create a data processing Lambda function
 * Create a `rule` and an `action`
+* Test Data Processing rule
 
+# Intro and explaination
 
-## **Step 1**
+##### The main difference to note between simple and custom authentication process :
+
+* aws_iot_authorizer_simple just checks the username and password sent by the device over MQTT against a constant USERNAME and PASSWORD, so basically there is only one master (username, password) pair and all devices should provide it and have it hard coded in their running code/script.
+
+* aws_iot_authorizer_things_registry on the other hand gets a username, password pair and checks them on your aws iot thing registry to make sure you’ve registered this device as a “thing”, and compares username to UUID and password to SECRET_KEY.
+Note that UUID and SECRET_KEY are “thing” attributes that you define when creating the thing.
+So here each device has it’s own credentials that will be checked against the thing registry.
+# **Step 1**
 ### Creating an Authorizer Lambda
 
 
-1. Download the project from GitHub: http://github.com/ayyeka/aws_iot_core_integration
-For authorisation, two lambdas are available, `aws_iot_authorizer_simple` and `aws_iot_authorizer_things_registry`
-The difference is important to note, 
-* `aws_iot_authorizer_simple` just checks the username and password sent by the device over MQTT against a constant `USERNAME` and `PASSWORD`, so basically there is only one master (username, password) pair and all devices should provide it and have it hard coded in their running code/script. 
+1. Download the project from GitHub: [aws_iot_core_integration](http://github.com/ayyeka/aws_iot_core_integration)
 
-* `aws_iot_authorizer_things_registry` on the other hand gets a `username`, `password` pair and checks them on your aws iot thing registry to make sure you've registered this device as a "thing", and compares username to `UUID` and password to `SECRET_KEY`.
-Note that UUID and SECRET_KEY are "thing" attributes that you define when creating the thing.
-So here each device has it's own credentials that will be checked against the thing registry.
-2. Locate the file  `lambda_function.py` under the `aws_iot_authorizer_simple` or `aws_iot_authorizer_things_registry` directory depending on your auth choice.
 
-3. This Lambda will authorize devices with MQTT username and password that match certain constants in the Python code in the case of using `aws_iot_authorizer_simple` or in case of  `aws_iot_authorizer_things_registry` it will check them against the aws iot thing registy like explained earlier.
-In case of using authorizer_simple edit these constants in `lambda_function.py` code to match your setup:
+2. Locate the file  `lambda_function.py` under the `aws_iot_authorizer_simple`
+
+3. This Lambda will authorize devices with MQTT username and password that match certain constants in the Python code `aws_iot_authorizer_simple`
+You can edit these constants in `lambda_function.py` code to match your setup:
     ```
     USERNAME = "TestUserName"
     PASSWORD = "TestPassword"
@@ -137,33 +143,67 @@ In case of using authorizer_simple edit these constants in `lambda_function.py` 
 ![picture_6](images/picture_6.PNG)
 
 4. Upload the edited file to AWS Lambda and create a Lambda function called `simple-custom-iot-auth` in the same region of your AWS IoT Core
-> **Note**: See the “Authentication and Metadata from the Things Registry” section for details on how to enhance this Lambda to retrieve authentication information from the Things Registry, **MAKE SURE that any lambda that needs to access the `thing registry` is granted the ListThings policy, see the mentioned** “Authentication and Metadata from the Things Registry” **section for full details**
 
-> **Note 2**: `USERNAME` and `PASSWORD` fields are hardcoded and are later used for the device validation step.
 
-### Register a device in the Things Registry
+> **Note**: `USERNAME` and `PASSWORD` fields are hardcoded and are later used for the device validation step.
 
-In case of using `aws_iot_authorizer_things_registry`, we'll need to define things inside aws iot console, open `Manage > Things`
-
-Click `Create` then `Create a single thing`
-Give it a name, then add attributes under the `Set searchable thing attributes` section.
-
-| Attribute key | Value | 
-| --- | --- |
-| SECRET_KEY | device auth password |
-| UUID | device auth username |
-
-Click `Create thing without certificate`
-You should see the thing added under `Things`
 ### Creating a Custom Authorizer
 
 1. On AWS IoT Core, navigate to the ‘Secure’ menu and then choose ‘Authorizers’
 2. Click the "Create" button and in the next screen configure the following:
-* **Name**: `myauth`
-* **Authorizer Function**: pick the name of the Lambda you chose (simple/thing registy) from aws lambdas list
+* **Name**: `mySimpleAuth`
+* **Authorizer Function**: pick the name of the Lambda you created `simple-custom-iot-auth`
 * **Enable Token Signing**: `unticked`
 * **Activate Authorizer**: `ticked`
 3. Click the `Create Authorizer`
+
+### Test authentication process
+Testing the authentication process is the same for both `Step 1` and `Step 2`, check the `Test Custom Authorizer` section
+
+# **Step 2**
+
+### Creating an Authorizer Lambda
+
+
+1. Download the project from GitHub: [aws_iot_core_integration](http://github.com/ayyeka/aws_iot_core_integration)
+
+
+2. Locate the file  `lambda_function.py` under `aws_iot_authorizer_things_registry`
+
+3. This Lambda will authorize devices with MQTT username and password that match certain attributes unique for each `Thing` registered in aws iot.
+
+
+4. Upload the edited file to AWS Lambda and create a Lambda function called `aws_iot_authorizer_things_registry` in the same region of your AWS IoT Core
+
+### Creating a Custom Authorizer
+
+1. On AWS IoT Core, navigate to the ‘Secure’ menu and then choose ‘Authorizers’
+2. Click the "Create" button and in the next screen configure the following:
+* **Name**: `myThingAuth`
+* **Authorizer Function**: pick the name of the Lambda you created `aws_iot_authorizer_things_registry`
+* **Enable Token Signing**: `unticked`
+* **Activate Authorizer**: `ticked`
+3. Click the `Create Authorizer`
+
+### Register a device in the Things Registry
+
+We'll need to register things inside aws iot console, open `Manage > Things`
+
+1. Click `Create` then `Create a single thing`
+Give it a name, then add attributes under the `Set searchable thing attributes` section.
+
+    | Attribute key | Value | 
+    | --- | --- |
+    | SECRET_KEY | device auth password |
+    | UUID | device auth username |
+
+2. Click `Create thing without certificate`
+You should see the thing added under `Things`
+
+### Give the auth Lambda access to `Things registry`
+
+See referenced section bellow
+> **Note**: See the “Authentication and Metadata from the Things Registry” section for details on how to allow this Lambda to retrieve authentication information from the Things Registry, **MAKE SURE that any lambda that needs to access the `thing registry` granted the ListThings policy, see the mentioned** “Authentication and Metadata from the Things Registry” **section for full details**
 
 ### Test Custom Authorizer
 > **Note**: We'll be using [pub.py](#) for testing authorisation and data processing, please take a look at the `CONFIG` section inside the code and change the constants depending on your aws info, device username and password...
@@ -175,7 +215,9 @@ Under `Lambda > Functions > aws_iot_authorizer_things_registry` for example
 Then open `Monitor > Logs`
 You should see the routed auth requests sent by the custom authorizer to this lambda.
 > **Note**: Note that there is a ~3 mins delay between running your script and aws lambda logs
-## **Step 2**
+
+
+# **Step 3**
 ### Creating a Data Processing Lambda
 
 1. Download the project from GitHub: http://github.com/ayyeka/aws_iot_core_integration
