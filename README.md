@@ -96,6 +96,7 @@ With `rules` and `actions`, common IoT tasks can be handled:
 | /wv/`<AKID>`/1/`samp`/p1 | Sensor data and device telemetry | Protobuf, see **SampleMessage.proto** for defenition |
 | wv/`<AKID>`/1/`reportend`/p1 | Last will and session termination reason | Protobuf, see **ReportEnd.proto** for defenition |
 
+> **Note**: These topics will be used in the later stages to talk to the AWS lambda
 
 ## AWS IoT Core Configuration
 This is what we want to achieve : 
