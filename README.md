@@ -301,7 +301,7 @@ You should see the routed auth requests sent by the custom authorizer to this La
 | User_defined_mqtt_pass | `<password>` | **Note 1**: `<password>` will be passed to the authorizer Lambda that is connected to the **myauth** IoT Core Authorizer <br> **Note 2**: do not leave empty, otherwise the user_defined_mqtt_user field will be ignored. <br> Max length: 25 characters |
 
 
-> **Important note**: Make sure the <username> and <password> configured here will be accepted by the Authorizer Lambda you configured in the previous .
+> **Important note**: Make sure the `username` and `password` configured here will be accepted by the Authorizer Lambda you configured in the previous step.
   
   
 ## Testing the work of Authorizer Lambda
