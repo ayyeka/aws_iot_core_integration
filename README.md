@@ -2,6 +2,7 @@
 
 <p align="center">
   <a href="https://www.ayyeka.com/">
+
   <img src="images/logo.png" />
   </a>
 </p>
@@ -9,7 +10,8 @@
 ## Guide Overview
 
 This guide will walk you through integrating a Wavelet device to AWS IoT Core. At the end of this guide, your Wavelet will transmit its sensor data to AWS IoT Core and receive remote configuration commands from Ayyeka's FAI-Pro platform, as shown in the following figure:
-![picture_2](images/picture_2.PNG)
+
+<img src="images/picture_9.png" width=70% class="center">
 
 The guide is structured as follows:
 * AWS IoT Core Intro
@@ -24,27 +26,23 @@ The guide is structured as follows:
 * Data ingestion over HTTPS or MQTTS
 * Rule-based data routing
 
-Other services  of **AWS IoT Core** are:
-* Integration with popular AWS data processing tools (Lambda, S3, SNS, SQS etc.)
-* Device shadows
-* Jobs
+Other services  of **AWS IoT Core** are Device shadows and Jobs, but these are out of the scope of this guide.
+
 
 ### AWS IoT Core – Things registry
 
-IoT devices are called “things” in AWS IoT. Each thing has a "type", which defines certain properties. Possible type examples are:
-* Datalogger4G has required fields: `display_name`, `serial_number` and `UUID`
-* Datalogger3G has only one required field: `serial_number`
+IoT devices are called **“things”** in AWS IoT. Each thing has a **"type"**, which defines certain properties. For examples are, an admin on AWS IoT Core can create the following **types**:
+* "Wavelet4" which have 3 required fields: `display_name`, `serial_number` and `UUID`
+* "Datalogger2" with a single required field: `serial_number`
 
-Types and things are created and managed by admin users. When creating a thing, it is registered in the `Things registry`.
-The `Things registry` can be accessed by other AWS Services (e.g. Lambda functions) 
+With **types** ready to go, the admin user can now create and manage **things**. When creating a **thing**, it is registered in the **Things Registry**.
+The **Things registry** can be accessed by other AWS Services (e.g. Lambda functions) 
 
-> **Note**: It is not mandatory to register your thing in the Things registry. Data can be ingested from unregistered things as well.
+> **Note**: It is not mandatory to register your thing in the Things Registry. Data can be ingested from unregistered things as well.
 
 
 ### AWS IoT Core – Device Authentication
-AWS IoT Core supports multiple authentication options: <br>
-
-**Protocols, authentication, and port mappings**  
+AWS IoT Core supports multiple communication and authentication options: <br>
 
 | Protocol | Operations supported | Authentication | Port | ALPN protocol name | 
 | --- | --- | --- | --- | --- | 
@@ -57,12 +55,13 @@ AWS IoT Core supports multiple authentication options: <br>
 |  HTTPS  | Publish only |  X\.509 client certificate  |  443†  |  'x-amzn-http-ca'  | 
 | HTTPS | Publish only | X\.509 client certificate | 8443 | N/A | 
 | HTTPS | Publish only | Custom authentication | 443 | N/A | 
-
-Wavelet supports the “Custom authentication” option over MQTT. See `Custom authentication` option above. <br>
-<br>
-**Custom Authentication** requires an **Authorizer Lambda Function**:
+> Source: <a href="https://docs.aws.amazon.com/iot/latest/developerguide/protocols.html">AWS IoT Developer Guide</a>
+> 
+Wavelet supports the **“Custom authentication”** option over MQTT. This method requires an **Authorizer Lambda Function** and works as follows:
 * The **Authorizer Lambda** receives the device’s MQTT credentials and verifies them
 * Verification can be done against AWS IoT Things registry OR any other data source
+
+See more details 
 
 ### AWS IoT Core – Data Routing
 
