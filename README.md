@@ -61,12 +61,12 @@ Wavelet supports the **“Custom authentication”** option over MQTT. This meth
 * The **Authorizer Lambda** receives the device’s MQTT credentials and verifies them
 * Verification can be done against AWS IoT Things registry OR any other data source
 
-See more details 
+See `Authorizer Lambda` section below. 
 
 ### AWS IoT Core – Data Routing
 
 Devices can publish their data over MQTT to AWS IoT Core
-> **Note**: the device must be granted **permission to publish** to a certain topic. See Authorizer Lambda below.
+> **Note**: the device must be granted **permission to publish** to a certain topic. See `Authorizer Lambda` below.
 
 Each received MQTT message is tested against a user-defined set of rules. A `rule` is defined by three elements:
 * `Filter`: defines which MQTT topics and messages will be processed by this rule
@@ -78,10 +78,10 @@ With `rules` and `actions`, common IoT tasks can be handled:
 * Republishing data to other systems
 * Storing the data in a database
 
-### Wavelet & MQTT – The Fine Print
+#### Wavelet & MQTT – The Fine Print
 
 **MQTT User & Password:**
-* Must be configured to a valid username and password, per the AWS IoT Core setup
+* The Wavelet must be configured to a valid username and password, per the AWS IoT Core setup
 * Note: empty `username` or empty `password` will force Wavelet to use its hardcoded defaults, which do not match the credentials defined by the Authorizer Lambda by default.
 
 **MQTT ClientID:**
